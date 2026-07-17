@@ -1,0 +1,17 @@
+project: savantenvs/fcc
+target: fcc
+
+# File-input (CLI) target: feed the fuzz bytes as a C source file to fcc, the small self-hosting C
+# compiler. `-S` runs the WHOLE front end (lexer, preprocessor/`using`, parser, analyzer, type checker)
+# and the x86 code emitter, writing assembly and STOPPING before it would shell out to `cc` to
+# assemble/link — so the fuzz surface is the compiler itself, with no assembler/linker dependency.
+# Not libFuzzer: the natural fuzz surface is the compiler on a source file. @@ is the input-file
+# placeholder. Ported from the old integration's file-input target (old: /fcc/bin/release/fcc /test.c,
+# target name `fcc`); kept the target name, switched to `-S @@` so the front end runs without a 32-bit
+# assemble/link toolchain.
+# defect rather than a benign exit. (UBSan is built halting via -fno-sanitize-recover=all.)
+cmds:
+  - cmd: /mayhem/fcc -S @@
+testsuite:
+  - https://$MAYHEM_DOMAIN/$MAYHEM_PROJECT/$MAYHEM_TARGET/testsuite.tar
+  - file://mayhem/fcc/testsuite
